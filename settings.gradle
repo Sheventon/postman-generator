@@ -1,1 +1,3 @@
 rootProject.name = 'postman-generator'
+include 'postman-annotation-processor'
+
