@@ -28,7 +28,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'javax.validation:validation-api:2.0.1.Final'
     annotationProcessor project(":postman-annotation-processor")
-    implementation project(":postman-annotation-processor")
 }
 
 tasks.named('test') {

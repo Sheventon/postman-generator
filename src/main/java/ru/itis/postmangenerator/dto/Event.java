@@ -42,4 +42,6 @@ public class Event {
 
     @NotEmpty
     private List<Task> tasks;
+
+    private Task task;
 }

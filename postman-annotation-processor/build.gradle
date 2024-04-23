@@ -13,6 +13,7 @@ dependencies {
     implementation 'org.springframework:spring-web:6.1.4'
     implementation 'javax.validation:validation-api:2.0.1.Final'
     implementation 'net.datafaker:datafaker:2.1.0'
+    implementation 'org.javatuples:javatuples:1.2'
 
     annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
     implementation 'com.google.auto.service:auto-service:1.1.1'

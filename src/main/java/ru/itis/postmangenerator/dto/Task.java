@@ -2,9 +2,7 @@ package ru.itis.postmangenerator.dto;
 
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -26,6 +24,8 @@ public class Task {
 
     private UUID photoId;
 
+    @Min(2)
+    @Max(100)
     private String position;
 
     private LocalDate startDate;
@@ -37,5 +37,12 @@ public class Task {
 
     private String title;
 
+    @Min(20)
+    @Max(200)
     private String description;
+
+    @Max(10)
+    private int integer;
+
+    private double doubleValue;
 }
