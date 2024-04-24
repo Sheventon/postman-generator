@@ -62,18 +62,19 @@ public class PostmanCollectionGenerator {
                     .append(String.format("\"method\": \"%s\",\n", httpMethod))
                     .append("\"header\": [");
 
-            if (POST_HTTP_METHOD.equals(httpMethod) || PUT_HTTP_METHOD.equals(httpMethod)) {
+            TypeMirror requestBodyFieldType = projectAnalyzer.returnRequestBodyFieldType(method);
+            if (requestBodyFieldType != null) {
                 collection.append("\n{\n")
                         .append(String.format("\"key\": \"%s\",\n", CONTENT_TYPE_HEADER_NAME))
                         .append(String.format("\"value\": \"%s\",\n", CONTENT_TYPE_HEADER_VALUE))
                         .append(String.format("\"type\": \"%s\"\n", HEADER_TYPE))
                         .append("}\n");
             }
-            if (POST_HTTP_METHOD.equals(httpMethod) || PUT_HTTP_METHOD.equals(httpMethod)) {
+            if (requestBodyFieldType != null) {
                 collection.append("],\n")
                         .append("\"body\": {\n")
                         .append(String.format("\"mode\": \"%s\",\n", BODY_MODE))
-                        .append(String.format("\"raw\": \"%s\",\n", createRequestBodyContent(method, faker)))
+                        .append(String.format("\"raw\": \"%s\",\n", createRequestBodyContent(requestBodyFieldType, faker)))
                         .append("\"options\": {\n")
                         .append("\"raw\": {\n")
                         .append(String.format("\"language\": \"%s\"\n", RAW_LANGUAGE))
@@ -124,9 +125,8 @@ public class PostmanCollectionGenerator {
         collection.delete(collection.length() - 2, collection.length() - 1);
     }
 
-    private String createRequestBodyContent(Element method, Faker faker) {
+    private String createRequestBodyContent(TypeMirror requestBodyFieldType, Faker faker) {
         StringBuilder raw = new StringBuilder();
-        TypeMirror requestBodyFieldType = projectAnalyzer.returnRequestBodyFieldType(method);
         List<Element> fields = projectAnalyzer.getFieldsFromRequestBody(requestBodyFieldType);
         if (!fields.isEmpty()) {
             raw.append("{\\n");
