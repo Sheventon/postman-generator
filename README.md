@@ -17,7 +17,8 @@ annotationProcessor project(":postman-annotation-processor")
 Далее для проверки работы подключенного annotation processor-а необходимо скомпилировать проект ```postman-generator```.
 
 ## Usage
-После компиляции проекта в папке build появится папка generated/sources/annotationProcessor/resources, 
+ПОсле подключения annotation processor в проект необходимо скомпилировать его. Для этого нужно вызвать команду 
+assemble для gradle. После компиляции проекта в папке build появится папка generated/sources/annotationProcessor/resources, 
 внутри которой будут находиться сгенерированные коллекции для Postman. Для каждого контроллера будет генерироваться 
 отдельная коллекция.
 
