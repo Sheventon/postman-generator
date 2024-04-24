@@ -6,9 +6,6 @@ public class GeneratorConstants {
 
     public static final String POSTMAN_SCHEMA = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json";
 
-    public static final String POST_HTTP_METHOD = "POST";
-    public static final String PUT_HTTP_METHOD = "PUT";
-
     public static final String HEADER_TYPE = "text";
 
     public static final String CONTENT_TYPE_HEADER_NAME = "Content-Type";

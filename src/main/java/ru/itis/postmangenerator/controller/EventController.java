@@ -23,7 +23,7 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
-    public Event getEventById(@PathVariable UUID id) {
+    public Event getEventById(@PathVariable UUID id, @RequestBody Task task) {
         return null;
     }
 
