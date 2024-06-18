@@ -41,4 +41,6 @@ public interface ProjectAnalyzer {
     Pair<Integer, Integer> getAnnotationValues(List<AnnotationMirror> annotations);
 
     boolean elementFromJavaLangPackage(Element element);
+
+    boolean innerFieldHasSamePackageThatParentField(Element parent, Element field);
 }
