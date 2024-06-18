@@ -166,7 +166,7 @@ public class PostmanCollectionGenerator {
                         .append("\\\"");
             } else if (!field.asType().getKind().isPrimitive() &&
                     checkFieldIsCollection(((DeclaredType) field.asType()).asElement().getSimpleName().toString())) {
-                for (int i = 0; i < 3; i++) {
+                for (int i = 0; i < CIRCLES_COUNT; i++) {
                     raw.append("{\\n");
                     List<? extends Element> enclosedFields = ((DeclaredType) ((DeclaredType) field.asType()).getTypeArguments().get(0)).asElement().getEnclosedElements()
                             .stream()
@@ -175,7 +175,7 @@ public class PostmanCollectionGenerator {
                             )
                             .toList();
                     fillClearFieldValue(raw, faker, enclosedFields, enclosedFields.isEmpty());
-                    if (i != 2) {
+                    if (i != CIRCLES_COUNT - 1) {
                         raw.append("},\\n");
                     } else {
                         raw.append("}\\n");
@@ -257,9 +257,9 @@ public class PostmanCollectionGenerator {
             TypeMirror typeArgument = typeArguments.get(0);
             if (typeArgument != null) {
                 String collectionInnerType = ((DeclaredType) typeArgument).asElement().getSimpleName().toString();
-                for (int i = 0; i < 3; i++) {
+                for (int i = 0; i < CIRCLES_COUNT; i++) {
                     boolean filled = fillByFieldType(collectionInnerType, raw, faker, annotations, typeArguments);
-                    if (filled && i != 2) {
+                    if (filled && i != CIRCLES_COUNT - 1) {
                         raw.append(", ");
                     }
                     if (!filled) {

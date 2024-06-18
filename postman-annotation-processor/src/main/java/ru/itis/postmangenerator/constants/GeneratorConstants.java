@@ -45,4 +45,6 @@ public class GeneratorConstants {
 
     public static final int DEFAULT_WORDS_COUNT = 10000;
 
+    public static final int CIRCLES_COUNT = 3;
+
 }
