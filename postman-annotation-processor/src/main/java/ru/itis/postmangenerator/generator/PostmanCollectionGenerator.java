@@ -1,6 +1,5 @@
 package ru.itis.postmangenerator.generator;
 
-
 import net.datafaker.Faker;
 import org.javatuples.Pair;
 import ru.itis.postmangenerator.analyzer.ProjectAnalyzer;
@@ -143,12 +142,15 @@ public class PostmanCollectionGenerator {
         boolean filled = fillByFieldName(fieldName, raw, faker);
         if (!filled) {
             String fieldType;
+            List<? extends TypeMirror> typeArguments;
             if (!field.asType().getKind().isPrimitive()) {
                 fieldType = ((DeclaredType) field.asType()).asElement().getSimpleName().toString();
+                typeArguments = ((DeclaredType) field.asType()).getTypeArguments();
             } else {
                 fieldType = field.asType().getKind().name();
+                typeArguments = Collections.emptyList();
             }
-            filled = fillByFieldType(fieldType, raw, faker, annotations);
+            filled = fillByFieldType(fieldType, raw, faker, annotations, typeArguments);
         }
         if (!filled) {
 
@@ -162,6 +164,25 @@ public class PostmanCollectionGenerator {
                                 .toList()
                                 .get(0))
                         .append("\\\"");
+            } else if (!field.asType().getKind().isPrimitive() &&
+                    checkFieldIsCollection(((DeclaredType) field.asType()).asElement().getSimpleName().toString())) {
+                for (int i = 0; i < CIRCLES_COUNT; i++) {
+                    raw.append("{\\n");
+                    List<? extends Element> enclosedFields = ((DeclaredType) ((DeclaredType) field.asType()).getTypeArguments().get(0)).asElement().getEnclosedElements()
+                            .stream()
+                            .filter(element ->
+                                    element.getKind().isField() && projectAnalyzer.elementFromJavaLangPackage(element)
+                            )
+                            .toList();
+                    fillClearFieldValue(raw, faker, enclosedFields, enclosedFields.isEmpty());
+                    if (i != CIRCLES_COUNT - 1) {
+                        raw.append("},\\n");
+                    } else {
+                        raw.append("}\\n");
+                    }
+                }
+                raw.append("]");
+
             } else {
                 raw.append("{\\n");
                 List<? extends Element> enclosedFields = ((DeclaredType) field.asType()).asElement().getEnclosedElements()
@@ -191,7 +212,8 @@ public class PostmanCollectionGenerator {
         }
     }
 
-    private boolean fillByFieldType(String fieldType, StringBuilder raw, Faker faker, List<AnnotationMirror> annotations) {
+    private boolean fillByFieldType(String fieldType, StringBuilder raw, Faker faker, List<AnnotationMirror> annotations,
+                                    List<? extends TypeMirror> typeArguments) {
         Pair<Integer, Integer> minAndMax = projectAnalyzer.getAnnotationValues(annotations);
         Integer min = minAndMax.getValue0();
         Integer max = minAndMax.getValue1();
@@ -230,6 +252,25 @@ public class PostmanCollectionGenerator {
                     );
             raw.append(String.format("\\\"%s\\\"", text));
             return true;
+        } else if (checkFieldIsCollection(fieldType)) {
+            raw.append("[");
+            TypeMirror typeArgument = typeArguments.get(0);
+            if (typeArgument != null) {
+                String collectionInnerType = ((DeclaredType) typeArgument).asElement().getSimpleName().toString();
+                for (int i = 0; i < CIRCLES_COUNT; i++) {
+                    boolean filled = fillByFieldType(collectionInnerType, raw, faker, annotations, typeArguments);
+                    if (filled && i != CIRCLES_COUNT - 1) {
+                        raw.append(", ");
+                    }
+                    if (!filled) {
+                        return false;
+                    }
+                }
+                raw.append("]");
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -275,15 +316,19 @@ public class PostmanCollectionGenerator {
         return FULL_NAME_FIELDS.contains(fieldName);
     }
 
-    private boolean checkFieldIsBoolean(String fieldName) {
-        return BOOLEAN_TYPES.contains(fieldName);
+    private boolean checkFieldIsBoolean(String fieldType) {
+        return BOOLEAN_TYPES.contains(fieldType);
     }
 
-    private boolean checkFieldIsInteger(String fieldName) {
-        return INTEGERS_TYPES.contains(fieldName);
+    private boolean checkFieldIsInteger(String fieldType) {
+        return INTEGERS_TYPES.contains(fieldType);
     }
 
-    private boolean checkFieldIsFractional(String fieldName) {
-        return FRACTIONAL_TYPES.contains(fieldName);
+    private boolean checkFieldIsFractional(String fieldType) {
+        return FRACTIONAL_TYPES.contains(fieldType);
+    }
+
+    private boolean checkFieldIsCollection(String fieldType) {
+        return COLLECTIONS_TYPES.contains(fieldType);
     }
 }

@@ -37,11 +37,14 @@ public class GeneratorConstants {
             "float", "Float", "FLOAT",
             "double", "Double", "DOUBLE");
     public static final List<String> BOOLEAN_TYPES = List.of("boolean", "Boolean", "BOOLEAN");
+    public static final List<String> COLLECTIONS_TYPES = List.of("List", "Queue", "Set");
 
-    public static final int MIN_DEFAULT_VALUE = 0;
+    public static final int MIN_DEFAULT_VALUE = 10;
     public static final int MAX_DEFAULT_VALUE = 50;
     public static final int DEFAULT_DECIMALS_COUNT = 1;
 
     public static final int DEFAULT_WORDS_COUNT = 10000;
+
+    public static final int CIRCLES_COUNT = 3;
 
 }
