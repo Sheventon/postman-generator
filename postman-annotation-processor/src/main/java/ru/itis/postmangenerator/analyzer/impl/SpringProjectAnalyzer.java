@@ -21,7 +21,12 @@ public class SpringProjectAnalyzer implements ProjectAnalyzer {
     public static final String MIN_ANNOTATION_NAME = "Min";
     public static final String MAX_ANNOTATION_NAME = "Max";
     public static final String SIZE_ANNOTATION_NAME = "Size";
+    public static final String PATTERN_ANNOTATION_NAME = "Pattern";
+    public static final String EMAIL_ANNOTATION_NAME = "Email";
+    public static final String POSITIVE_ANNOTATION_NAME = "Positive";
+    public static final String NEGATIVE_ANNOTATION_NAME = "Negative";
 
+    public static final String REGEXP_PARAMETER_NAME = "regexp";
     public static final String MIN_PARAMETER_NAME = "min";
     public static final String MAX_PARAMETER_NAME = "max";
 
@@ -140,6 +145,48 @@ public class SpringProjectAnalyzer implements ProjectAnalyzer {
         }
         return Pair.with(min, max);
     }
+    public String getPatternAnnotationValues(List<AnnotationMirror> annotations) {
+        for (AnnotationMirror annotation : annotations) {
+            if (annotation.getAnnotationType().asElement().getSimpleName().toString().equals(PATTERN_ANNOTATION_NAME)) {
+                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotation.getElementValues().entrySet()) {
+                    ExecutableElement key = entry.getKey();
+                    AnnotationValue value = entry.getValue();
+                    if (key.getSimpleName().toString().equals(REGEXP_PARAMETER_NAME)) {
+                        return value.getValue().toString();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    @Override
+    public boolean hasEmailAnnotation(List<AnnotationMirror> annotations) {
+        for (AnnotationMirror annotation : annotations) {
+            if (annotation.getAnnotationType().asElement().getSimpleName().toString().equals(EMAIL_ANNOTATION_NAME)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    @Override
+    public boolean hasPositiveAnnotation(List<AnnotationMirror> annotations) {
+        for (AnnotationMirror annotation : annotations) {
+            if (annotation.getAnnotationType().asElement().getSimpleName().toString().equals(POSITIVE_ANNOTATION_NAME)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    @Override
+    public boolean hasNegativeAnnotation(List<AnnotationMirror> annotations) {
+        for (AnnotationMirror annotation : annotations) {
+            if (annotation.getAnnotationType().asElement().getSimpleName().toString().equals(NEGATIVE_ANNOTATION_NAME)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     @Override
     public boolean elementFromJavaLangPackage(Element element) {

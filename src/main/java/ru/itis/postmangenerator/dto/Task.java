@@ -18,11 +18,15 @@ public class Task {
     private Long executorId;
 
     @NotBlank
-    private String email;
+    @Email
+    private String emmail;
 
     private String fullName;
 
     private UUID photoId;
+
+    @Pattern(regexp = "(\\d{3}[-]?){2}\\d{4}")
+    private String phoneNumber;
 
     @Min(2)
     @Max(100)
@@ -41,8 +45,10 @@ public class Task {
     @Max(200)
     private String description;
 
-    @Max(10)
+    @Max(-10)
+    @Negative
     private int integer;
 
+    @Positive
     private double doubleValue;
 }
