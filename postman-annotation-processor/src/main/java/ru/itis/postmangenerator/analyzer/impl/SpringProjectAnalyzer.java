@@ -152,6 +152,11 @@ public class SpringProjectAnalyzer implements ProjectAnalyzer {
         return annotationPackage != null && (annotationPackage.getQualifiedName().toString().startsWith(JAVA_LANG_PACKAGE));
     }
 
+    @Override
+    public boolean innerFieldHasSamePackageThatParentField(Element parent, Element field) {
+        return getPackage(((DeclaredType) parent.asType()).asElement()).equals(getPackage(((DeclaredType) field.asType()).asElement()));
+    }
+
     private Integer getValueFromMinOrMaxAnnotation(Integer min, AnnotationMirror annotation, String minAnnotationName) {
         if (annotation.getAnnotationType().asElement().getSimpleName().toString().equals(minAnnotationName)) {
             for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotation.getElementValues().entrySet()) {

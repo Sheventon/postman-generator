@@ -1,6 +1,5 @@
 package ru.itis.postmangenerator.generator;
 
-
 import net.datafaker.Faker;
 import org.javatuples.Pair;
 import ru.itis.postmangenerator.analyzer.ProjectAnalyzer;
@@ -8,6 +7,7 @@ import ru.itis.postmangenerator.analyzer.impl.SpringProjectAnalyzer;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import java.time.LocalDate;
@@ -153,11 +153,22 @@ public class PostmanCollectionGenerator {
             filled = fillByFieldType(fieldType, raw, faker, annotations, typeArguments);
         }
         if (!filled) {
-            if (!field.asType().getKind().isPrimitive() &&
+
+            if (((DeclaredType) field.asType()).asElement().getKind() == ElementKind.ENUM) {
+                raw.append("\\\"")
+                        .append(((DeclaredType) field.asType()).asElement().getEnclosedElements()
+                                .stream()
+                                .filter(element ->
+                                        element.getKind() != ElementKind.METHOD &&
+                                                element.getKind() != ElementKind.CONSTRUCTOR)
+                                .toList()
+                                .get(0))
+                        .append("\\\"");
+            } else if (!field.asType().getKind().isPrimitive() &&
                     checkFieldIsCollection(((DeclaredType) field.asType()).asElement().getSimpleName().toString())) {
                 for (int i = 0; i < 3; i++) {
                     raw.append("{\\n");
-                    List<? extends Element> enclosedFields = ((DeclaredType)((DeclaredType) field.asType()).getTypeArguments().get(0)).asElement().getEnclosedElements()
+                    List<? extends Element> enclosedFields = ((DeclaredType) ((DeclaredType) field.asType()).getTypeArguments().get(0)).asElement().getEnclosedElements()
                             .stream()
                             .filter(element ->
                                     element.getKind().isField() && projectAnalyzer.elementFromJavaLangPackage(element)
@@ -171,12 +182,16 @@ public class PostmanCollectionGenerator {
                     }
                 }
                 raw.append("]");
+
             } else {
                 raw.append("{\\n");
                 List<? extends Element> enclosedFields = ((DeclaredType) field.asType()).asElement().getEnclosedElements()
                         .stream()
                         .filter(element ->
-                                element.getKind().isField() && projectAnalyzer.elementFromJavaLangPackage(element)
+                                element.getKind().isField() &&
+                                        (projectAnalyzer.elementFromJavaLangPackage(element) ||
+                                                projectAnalyzer.innerFieldHasSamePackageThatParentField(element, field)
+                                        )
                         )
                         .toList();
                 fillClearFieldValue(raw, faker, enclosedFields, enclosedFields.isEmpty());
