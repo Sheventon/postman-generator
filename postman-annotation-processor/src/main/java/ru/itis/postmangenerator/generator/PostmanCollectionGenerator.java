@@ -8,6 +8,7 @@ import ru.itis.postmangenerator.analyzer.impl.SpringProjectAnalyzer;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import java.time.LocalDate;
@@ -150,15 +151,31 @@ public class PostmanCollectionGenerator {
             filled = fillByFieldType(fieldType, raw, faker, annotations);
         }
         if (!filled) {
-            raw.append("{\\n");
-            List<? extends Element> enclosedFields = ((DeclaredType) field.asType()).asElement().getEnclosedElements()
-                    .stream()
-                    .filter(element ->
-                            element.getKind().isField() && projectAnalyzer.elementFromJavaLangPackage(element)
-                    )
-                    .toList();
-            fillClearFieldValue(raw, faker, enclosedFields, enclosedFields.isEmpty());
-            raw.append("}");
+
+            if (((DeclaredType) field.asType()).asElement().getKind() == ElementKind.ENUM) {
+                raw.append("\\\"")
+                        .append(((DeclaredType) field.asType()).asElement().getEnclosedElements()
+                                .stream()
+                                .filter(element ->
+                                        element.getKind() != ElementKind.METHOD &&
+                                                element.getKind() != ElementKind.CONSTRUCTOR)
+                                .toList()
+                                .get(0))
+                        .append("\\\"");
+            } else {
+                raw.append("{\\n");
+                List<? extends Element> enclosedFields = ((DeclaredType) field.asType()).asElement().getEnclosedElements()
+                        .stream()
+                        .filter(element ->
+                                element.getKind().isField() &&
+                                        (projectAnalyzer.elementFromJavaLangPackage(element) ||
+                                                projectAnalyzer.innerFieldHasSamePackageThatParentField(element, field)
+                                        )
+                        )
+                        .toList();
+                fillClearFieldValue(raw, faker, enclosedFields, enclosedFields.isEmpty());
+                raw.append("}");
+            }
         }
     }
 
