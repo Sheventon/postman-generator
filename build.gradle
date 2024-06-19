@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.5'
     id 'io.spring.dependency-management' version '1.1.4'
+    id "org.springdoc.openapi-gradle-plugin" version "1.8.0"
 }
 
 group = 'tu.itis'
@@ -22,6 +23,7 @@ repositories {
 }
 
 dependencies {
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.4.0'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -32,4 +34,15 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// prevents error: Cannot access input property 'workingDir' of task ':forkedSpringBootRun'
+tasks {
+    forkedSpringBootRun {
+        doNotTrackState("See https://github.com/springdoc/springdoc-openapi-gradle-plugin/issues/102")
+    }
+}
+
+openApi {
+    outputDir.set(file("${rootProject.layout.buildDirectory.get().asFile}/generated/sources/annotationProcessor/java/main/resources"))
 }
