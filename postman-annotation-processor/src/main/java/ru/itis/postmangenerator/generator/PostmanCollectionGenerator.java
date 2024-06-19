@@ -1,5 +1,6 @@
 package ru.itis.postmangenerator.generator;
 
+import com.mifmif.common.regex.Generex;
 import net.datafaker.Faker;
 import org.javatuples.Pair;
 import ru.itis.postmangenerator.analyzer.ProjectAnalyzer;
@@ -139,7 +140,7 @@ public class PostmanCollectionGenerator {
     private void fillFieldValue(StringBuilder raw, Element field, Faker faker) {
         List<AnnotationMirror> annotations = projectAnalyzer.extractFieldValidationAnnotations(field);
         String fieldName = field.getSimpleName().toString();
-        boolean filled = fillByFieldName(fieldName, raw, faker);
+        boolean filled = fillByFieldName(fieldName, raw, faker, annotations);
         if (!filled) {
             String fieldType;
             List<? extends TypeMirror> typeArguments;
@@ -217,6 +218,8 @@ public class PostmanCollectionGenerator {
         Pair<Integer, Integer> minAndMax = projectAnalyzer.getAnnotationValues(annotations);
         Integer min = minAndMax.getValue0();
         Integer max = minAndMax.getValue1();
+        boolean isPositive = projectAnalyzer.hasPositiveAnnotation(annotations);
+        boolean isNegative =projectAnalyzer.hasNegativeAnnotation(annotations);
         if (fieldType.equals(UUID_TYPE)) {
             raw.append(String.format("\\\"%s\\\"", UUID.randomUUID()));
             return true;
@@ -224,11 +227,23 @@ public class PostmanCollectionGenerator {
             raw.append(String.format("\\\"%s\\\"", faker.bool().bool()));
             return true;
         } else if (checkFieldIsInteger(fieldType)) {
+            if(isPositive){
+                min = (min != null && min>0) ? min : 1;
+            } else if (isNegative){
+                max = (max != null && max<0) ? max : 0;
+                min = min != null ? min : -MAX_DEFAULT_VALUE;
+            }
             raw.append(String.format("\\\"%s\\\"", faker.number()
                     .numberBetween(min != null ? min : MIN_DEFAULT_VALUE, max != null ? max : MAX_DEFAULT_VALUE)
             ));
             return true;
         } else if (checkFieldIsFractional(fieldType)) {
+            if(isPositive){
+                min = (min != null && min>0) ? min : 1;
+            } else if (isNegative){
+                max = (max != null && max<0) ? max : 0;
+                min = min != null ? min : -MAX_DEFAULT_VALUE;
+            }
             raw.append(String.format("\\\"%s\\\"", faker.number()
                     .randomDouble(
                             DEFAULT_DECIMALS_COUNT,
@@ -276,7 +291,7 @@ public class PostmanCollectionGenerator {
         }
     }
 
-    private boolean fillByFieldName(String fieldName, StringBuilder raw, Faker faker) {
+    private boolean fillByFieldName(String fieldName, StringBuilder raw, Faker faker, List<AnnotationMirror> annotations) {
         if (checkFieldIsEmail(fieldName)) {
             raw.append(String.format("\\\"%s\\\"", faker.internet().emailAddress()));
             return true;
@@ -291,6 +306,16 @@ public class PostmanCollectionGenerator {
             return true;
         } else if (checkFieldIsFullName(fieldName)) {
             raw.append(String.format("\\\"%s\\\"", faker.name().name()));
+            return true;
+        } else if (projectAnalyzer.getPatternAnnotationValues(annotations)!=null){
+            String regexp = projectAnalyzer.getPatternAnnotationValues(annotations);
+            if(regexp!=null){
+                Generex generex = new Generex(regexp);
+                raw.append(String.format("\\\"%s\\\"", generex.random()));
+                return true;
+            }
+        } else if (projectAnalyzer.hasEmailAnnotation(annotations)){
+            raw.append(String.format("\\\"%s\\\"", faker.internet().emailAddress()));
             return true;
         }
         return false;

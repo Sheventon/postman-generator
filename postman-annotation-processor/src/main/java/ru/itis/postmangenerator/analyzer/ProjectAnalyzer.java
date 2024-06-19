@@ -40,6 +40,14 @@ public interface ProjectAnalyzer {
 
     Pair<Integer, Integer> getAnnotationValues(List<AnnotationMirror> annotations);
 
+    String getPatternAnnotationValues(List<AnnotationMirror> annotations);
+
+    boolean hasEmailAnnotation(List<AnnotationMirror> annotations);
+
+    boolean hasPositiveAnnotation(List<AnnotationMirror> annotations);
+
+    boolean hasNegativeAnnotation(List<AnnotationMirror> annotations);
+
     boolean elementFromJavaLangPackage(Element element);
 
     boolean innerFieldHasSamePackageThatParentField(Element parent, Element field);
